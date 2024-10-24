@@ -34,8 +34,30 @@ class Main extends PluginBase {
         return false;
     }
 
-    private function backupWorld(CommandSender $sender): void {
-        // Implement the world backup logic here
-        $sender->sendMessage("World backup started...");
+    private function backupWorld(?CommandSender $sender): void {
+    $worldName = $this->getServer()->getWorldManager()->getDefaultWorld()->getFolderName();
+    $backupDir = $this->getDataFolder() . "backups/" . date("Y-m-d_H-i-s") . "/";
+
+    @mkdir($backupDir, 0777, true);
+    $this->recurseCopy($this->getServer()->getDataPath() . "worlds/" . $worldName, $backupDir);
+
+    if ($sender !== null) {
+        $sender->sendMessage("World backup completed!");
     }
+}
+
+private function recurseCopy(string $src, string $dst): void {
+    $dir = opendir($src);
+    @mkdir($dst);
+    while (($file = readdir($dir)) !== false) {
+        if (($file !== '.') && ($file !== '..')) {
+            if (is_dir($src . '/' . $file)) {
+                $this->recurseCopy($src . '/' . $file, $dst . '/' . $file);
+            } else {
+                copy($src . '/' . $file, $dst . '/' . $file);
+            }
+        }
+    }
+    closedir($dir);
+}
 }
