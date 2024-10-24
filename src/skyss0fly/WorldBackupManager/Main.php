@@ -9,8 +9,6 @@ use pocketmine\scheduler\ClosureTask;
 
 class Main extends PluginBase {
 
-    private $config;
-
     public function onEnable(): void {
         $this->saveDefaultConfig();
         $interval = $this->getConfig()->get("backup-interval", 3600); // Default to 1 hour
