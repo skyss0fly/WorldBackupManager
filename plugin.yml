@@ -7,3 +7,14 @@ commands:
   backup:
     description: Manually backup the world
     permission: backup.use
+  restore:
+    description: Restore a Backup
+    permission: backup.restore
+
+permissions:
+  backup.use:
+    description: Manually Backup the world
+    default: op
+  backup.restore:
+    description: Restore a Backup
+    default: op
