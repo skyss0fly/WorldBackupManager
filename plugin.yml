@@ -1,6 +1,6 @@
 name: WorldBackupManager
 version: 1.0.0
-main: WorldBackupManager\Main
+main: slyss0fly\WorldBackupManager\Main
 api: 5.0.0
 author: skyss0fly
 commands:
