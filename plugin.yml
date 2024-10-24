@@ -1,0 +1,9 @@
+name: WorldBackupManager
+version: 1.0.0
+main: WorldBackupManager\Main
+api: 5.0.0
+author: skyss0fly
+commands:
+  backup:
+    description: Manually backup the world
+    permission: backup.use
