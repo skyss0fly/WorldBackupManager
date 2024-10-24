@@ -1,0 +1,2 @@
+backup-interval: 3600 
+# Backup every hour (in seconds)
