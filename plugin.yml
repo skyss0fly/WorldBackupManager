@@ -5,16 +5,16 @@ api: 5.0.0
 author: skyss0fly
 commands:
   backup:
-    description: Manually backup the world
+    description: "Manually backup the world."
     permission: backup.use
   restore:
-    description: Restore a Backup
+    description: "Restore a Backup."
     permission: backup.restore
 
 permissions:
   backup.use:
-    description: Manually Backup the world
+    description: "Manually Backup the world."
     default: op
   backup.restore:
-    description: Restore a Backup
+    description: "Restore a Backup."
     default: op
