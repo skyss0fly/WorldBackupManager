@@ -12,16 +12,12 @@ class Main extends PluginBase {
     private $config;
 
     public function onEnable(): void {
-        // Save the default config if not already saved
         $this->saveDefaultConfig();
-
-        // Retrieve the backup interval from config (in seconds)
         $interval = $this->getConfig()->get("backup-interval", 3600); // Default to 1 hour
 
-        // Schedule the task to repeat based on the interval
         $this->getScheduler()->scheduleRepeatingTask(new ClosureTask(function() : void {
-            $this->backupWorld(null); // Pass null to indicate it's an automated backup
-        }), $interval * 20); // Convert seconds to ticks (20 ticks = 1 second)
+            $this->backupWorld(null); // Automatic backup
+        }), $interval * 20); // Convert seconds to ticks
 
         $this->getLogger()->info("WorldBackupManager has been enabled!");
     }
@@ -29,6 +25,9 @@ class Main extends PluginBase {
     public function onCommand(CommandSender $sender, Command $command, string $label, array $args): bool {
         if ($command->getName() === "backup") {
             $this->backupWorld($sender);
+            return true;
+        } elseif ($command->getName() === "restore" && isset($args[0])) {
+            $this->restoreBackup($sender, $args[0]); // Restore a specific backup
             return true;
         }
         return false;
@@ -41,7 +40,6 @@ class Main extends PluginBase {
         @mkdir($backupDir, 0777, true);
         $this->recurseCopy($this->getServer()->getDataPath() . "worlds/" . $worldName, $backupDir);
 
-        // Call zipBackup to compress the backup folder
         $this->zipBackup($backupDir, $this->getDataFolder() . "backups/" . date("Y-m-d_H-i-s") . ".zip");
 
         if ($sender !== null) {
@@ -83,5 +81,37 @@ class Main extends PluginBase {
 
             $zip->close();
         }
+    }
+
+    private function restoreBackup(CommandSender $sender, string $backupName): void {
+        $backupZip = $this->getDataFolder() . "backups/" . $backupName . ".zip";
+        $worldName = $this->getServer()->getWorldManager()->getDefaultWorld()->getFolderName();
+        $worldDir = $this->getServer()->getDataPath() . "worlds/" . $worldName . "/";
+
+        // Check if the backup exists
+        if (!file_exists($backupZip)) {
+            $sender->sendMessage("Backup not found: $backupName");
+            return;
+        }
+
+        // Unzip the backup
+        $zip = new \ZipArchive();
+        if ($zip->open($backupZip) === true) {
+            $this->recurseDelete($worldDir); // Clear the current world directory
+            $zip->extractTo($worldDir); // Extract backup files to the world directory
+            $zip->close();
+            $sender->sendMessage("World restored from backup: $backupName");
+        } else {
+            $sender->sendMessage("Failed to open backup: $backupName");
+        }
+    }
+
+    private function recurseDelete(string $dir): void {
+        $files = array_diff(scandir($dir), ['.', '..']);
+        foreach ($files as $file) {
+            $path = "$dir/$file";
+            is_dir($path) ? $this->recurseDelete($path) : unlink($path);
+        }
+        rmdir($dir);
     }
 }
