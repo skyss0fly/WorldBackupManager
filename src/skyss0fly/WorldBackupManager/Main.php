@@ -60,4 +60,24 @@ private function recurseCopy(string $src, string $dst): void {
     }
     closedir($dir);
 }
+    private function zipBackup(string $source, string $destination): void {
+    if (!extension_loaded('zip') || !file_exists($source)) {
+        return;
+    }
+
+    $zip = new \ZipArchive();
+    if ($zip->open($destination, \ZipArchive::CREATE | \ZipArchive::OVERWRITE)) {
+        $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($source), \RecursiveIteratorIterator::LEAVES_ONLY);
+
+        foreach ($files as $file) {
+            if (!$file->isDir()) {
+                $filePath = $file->getRealPath();
+                $relativePath = substr($filePath, strlen($source) + 1);
+                $zip->addFile($filePath, $relativePath);
+            }
+        }
+
+        $zip->close();
+    }
+    }
 }
